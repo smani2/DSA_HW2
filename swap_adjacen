@@ -1,0 +1,32 @@
+#Sanjay mani
+#02-04-2025
+# Description: This program swaps adjacent characters in a string.
+
+def swap_adjacent(s):
+    """
+    Swap two adjacent characters in the string.
+    :param s: Input string
+    :return: String with adjacent characters swapped
+    """
+    # Convert the string to a list for easier manipulation
+    s_list = list(s)
+    
+    # Swap adjacent characters
+    for i in range(0, len(s_list) - 1, 2):  # Step by 2 to swap pairs
+        # Swap s_list[i] and s_list[i + 1]
+        temp = s_list[i]
+        s_list[i] = s_list[i + 1]
+        s_list[i + 1] = temp
+    
+    # Convert the list back to a string
+    return ''.join(s_list)
+
+# Step 1: Take user input
+input_string = input("Enter a string: ")
+
+# Step 2: Swap adjacent characters
+swapped_string = swap_adjacent(input_string)
+
+# Step 3: Output the result
+print(f'Original string: "{input_string}"')
+print(f'Swapped string: "{swapped_string}"')
