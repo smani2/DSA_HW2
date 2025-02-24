@@ -1,0 +1,76 @@
+import re
+from collections import deque
+
+
+class ExpressionParser:
+    def __init__(self):
+        self.original_expression = ""
+        self.sanitized_expression = ""
+
+    def get_input(self):
+        """
+        Prompts the user for an expression, removes comments, and extra spaces.
+        """
+        self.original_expression = input("Please enter an expression: ")
+        # Remove both block (/* */) and line (//) comments
+        self.sanitized_expression = re.sub(r'//.*?$|/\*.*?\*/', '', self.original_expression, flags=re.DOTALL).strip()
+        return self.sanitized_expression
+
+    def validate_symbols(self):
+        """
+        Checks if all symbols { }, [ ], ( ), and /* */ are balanced.
+        """
+        stack = deque()
+        matching_pairs = {'}': '{', ']': '[', ')': '('}
+
+        for index, char in enumerate(self.sanitized_expression):
+            if char in "{[(":  # Opening symbol
+                stack.append(char)
+            elif char in "}])":  # Closing symbol
+                if not stack:
+                    return f"Error: Stack is empty, missing opening symbol for {char} at position {index}"
+                top_symbol = stack.pop()
+                if matching_pairs[char] != top_symbol:
+                    return f"Error: Symbol mismatch, {char} doesn't match {top_symbol} at position {index}"
+
+        if stack:
+            return f"Error: Stack is not empty, unmatched {stack[-1]} left in stack"
+
+        return "Symbols are balanced"
+
+    def to_postfix(self):
+        """
+        Converts the expression to postfix notation if the symbols are balanced.
+        """
+        operator_precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '(': 0, '{': 0, '[': 0}
+        output_list = []
+        operator_stack = deque()
+        tokens = re.findall(r'\w+|[+\-*/(){}\[\]]', self.sanitized_expression)
+
+        for token in tokens:
+            if token.isalnum():  # Operand (e.g., number or variable)
+                output_list.append(token)
+            elif token in "({[":  # Opening parenthesis or braces
+                operator_stack.append(token)
+            elif token in ")}]":  # Closing parenthesis or braces
+                while operator_stack and operator_stack[-1] not in "({[":
+                    output_list.append(operator_stack.pop())
+                operator_stack.pop()  # Remove the matching opening symbol
+            else:  # Operator (e.g., +, -, *, /)
+                while (operator_stack and operator_precedence.get(operator_stack[-1], 0) >= operator_precedence[token]):
+                    output_list.append(operator_stack.pop())
+                operator_stack.append(token)
+
+        while operator_stack:
+            output_list.append(operator_stack.pop())
+
+        return " ".join(output_list)
+
+
+if __name__ == "__main__":
+    parser = ExpressionParser()
+    parser.get_input()
+    symbol_validation = parser.validate_symbols()
+    print(symbol_validation)
+    if symbol_validation == "Symbols are balanced":
+        print("Postfix Expression:", parser.to_postfix())
